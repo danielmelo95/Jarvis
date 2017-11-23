@@ -377,7 +377,7 @@ load_icode(struct Env *e, uint8_t *binary)
 		{
 			region_alloc(e, (void *)ph->p_va, ph->p_memsz);
 			memcpy((void*)ph->p_va, (void*)binary + ph->p_offset, ph->p_filesz);
-			memset((void *)(binary + ph->p_offset + ph->p_filesz), 0, (uint32_t)ph->p_memsz - ph->p_filesz);
+			memset((void*)(ph->p_va + ph->p_filesz), 0, (uint32_t)ph->p_memsz - ph->p_filesz);
 			
 		}
 	}

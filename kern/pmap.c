@@ -296,6 +296,7 @@ mem_init_mp(void)
 void
 page_init(void)
 {
+	size_t i;
 	// LAB 4:
 	// Change your code to mark the physical page at MPENTRY_PADDR
 	// as in use
@@ -317,11 +318,12 @@ page_init(void)
 	// Change the code to reflect this.
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
-	size_t i;
-	pages[0].pp_ref = 1;
-	size_t pgnum = (int)ROUNDUP(((char*)envs) + (sizeof(struct Env) * NENV) - 0xf0000000, PGSIZE)/PGSIZE;;
+
+
+	//size_t pgnum = (int)ROUNDUP(((char*)envs) + (sizeof(struct Env) * NENV) - 0xf0000000,PGSIZE)/PGSIZE;
+	size_t pgnum = PGNUM(PADDR(boot_alloc(0)));	
 	for (i = 1; i < npages; i++) {
-		if ((i >= npages_basemem) && (i < pgnum))
+		if (((i >= npages_basemem) && (i < pgnum)) || (i==PGNUM(MPENTRY_PADDR)))
 			continue;
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
@@ -592,7 +594,14 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+
+	size = ROUNDUP(pa+size, PGSIZE);
+	pa = ROUNDDOWN(pa, PGSIZE);
+	size -= pa;
+	if (base+size >= MMIOLIM) panic("not enough memory");
+	boot_map_region(kern_pgdir, base, size, pa, PTE_W | PTE_PCD | PTE_PWT);
+	return (void *)base;	
+//	panic("mmio_map_region not implemented");
 }
 
 static uintptr_t user_mem_check_addr;
@@ -808,6 +817,7 @@ check_page_alloc(void)
 static void
 check_kern_pgdir(void)
 {
+	cprintf("entering check_page_pgdir...\n");
 	uint32_t i, n;
 	pde_t *pgdir;
 
