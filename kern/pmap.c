@@ -322,6 +322,7 @@ page_init(void)
 
 	//size_t pgnum = (int)ROUNDUP(((char*)envs) + (sizeof(struct Env) * NENV) - 0xf0000000,PGSIZE)/PGSIZE;
 	size_t pgnum = PGNUM(PADDR(boot_alloc(0)));	
+
 	for (i = 1; i < npages; i++) {
 		if (((i >= npages_basemem) && (i < pgnum)) || (i==PGNUM(MPENTRY_PADDR)))
 			continue;
@@ -329,6 +330,21 @@ page_init(void)
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}
+
+/*	for (i = 1; i < npages; i++) {
+		if (((i >= npages_basemem) && (i < pgnum)))
+			continue;
+		if((i==PGNUM(MPENTRY_PADDR))){
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}
+		else{
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		} 
+	}										*/
 	
 
 }
